@@ -176,7 +176,7 @@ export default {
 
   },
   created () {
-    console.log('edge语言包初始化完成')
+    console.log('edge多语言插件初始化完成')
     // 接收消息
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       console.log(msg)
