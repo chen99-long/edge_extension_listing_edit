@@ -59,7 +59,7 @@ module.exports = {
             onEnd: {
               archive: process.env.NODE_ENV === 'production' ? [{
                 source: path.join(__dirname, './dist'),
-                destination: path.join(__dirname, 'already', name + '_' + process.env.BROWSER + '_v' + version + '.zip')
+                destination: path.join(__dirname, 'already', name + '_' + version + '.zip')
               }] : []
             }
           }
