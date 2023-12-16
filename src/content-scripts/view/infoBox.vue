@@ -70,6 +70,10 @@ export default {
     }
   },
   methods: {
+    delay (min, max) {
+      const ms = Math.floor(Math.random() * (max - min + 1)) + min
+      return new Promise(resolve => setTimeout(resolve, ms))
+    },
     // 进度条
     format (percentage) {
       if (!this.tableList.length) {
@@ -78,7 +82,8 @@ export default {
       return percentage === 100 ? '已完成' : `${this.num}/${this.tableList.length}`
     },
     // 保存表单并保存
-    startFilling () {
+    async startFilling () {
+      await this.delay(1000, 1200)
       const evt = new InputEvent('input', {
         inputType: 'insertText',
         data: '',
@@ -86,17 +91,23 @@ export default {
         isComposing: false
       })
       // 填写描述
-      document.querySelector('textarea.form-control').value = this.description
-      document.querySelector('textarea.form-control').dispatchEvent(evt)
-      // 遍历填写关键词
-      // 先删除所有关键词
-      document.querySelectorAll('.search-term-bubble-display a:nth-child(2)').forEach(closebtn => closebtn.click())
-      for (let i = 0; i < this.keywordList.length; i++) {
-        if (document.querySelectorAll('.search-term-bubble-display').length >= this.keywordList.length) break // 如果已经填过了，就不要填了
-        document.querySelector('#last-search-item').value = this.keywordList[i]
-        document.querySelector('#last-search-item').dispatchEvent(evt)
-        document.querySelectorAll('.ng-dirty .btn-link')[document.querySelectorAll('.ng-dirty .btn-link').length - 1].click()
+      if (this.description) {
+        document.querySelector('textarea.form-control').value = this.description
+        document.querySelector('textarea.form-control').dispatchEvent(evt)
       }
+
+      // 遍历填写关键词
+      if (this.keywordList.length) {
+      // 先删除所有关键词
+        document.querySelectorAll('.search-term-bubble-display a:nth-child(2)').forEach(closebtn => closebtn.click())
+        for (let i = 0; i < this.keywordList.length; i++) {
+          if (document.querySelectorAll('.search-term-bubble-display').length >= this.keywordList.length) break // 如果已经填过了，就不要填了
+          document.querySelector('#last-search-item').value = this.keywordList[i]
+          document.querySelector('#last-search-item').dispatchEvent(evt)
+          document.querySelectorAll('.ng-dirty .btn-link')[document.querySelectorAll('.ng-dirty .btn-link').length - 1].click()
+        }
+      }
+
       console.log('表单填写完成，开始保存')
       if (document.querySelectorAll('he-button')[0].shadowRoot.querySelector('.control')) {
         console.log(document.querySelectorAll('he-button')[0].shadowRoot.querySelector('.control'))
@@ -110,6 +121,10 @@ export default {
       if (this.num >= this.tableList.length) {
         // 全部完成，结束运行
         console.log('全部完成，结束运行')
+        this.$message({
+          type: 'success',
+          message: '任务已全部完成，自动化脚本毕竟没脑子，请注意好好检查一下噢'
+        })
         this.status = statusMap.stop
         return
       }
@@ -138,16 +153,31 @@ export default {
       }
     },
     start (msg) {
-      if (!this.description && !this.keywordList.length) {
-        return alert('输入描述关键词')
-      }
-      if (!this.tableList.length) {
-        return alert('正在初始化语言包，请稍等')
-      }
-      console.log('开始运行，给启动器发送讯息启动')
-      this.status = statusMap.start
+      const startInit = () => {
+        if (!this.tableList.length) {
+          return alert('正在初始化语言包，请稍等')
+        }
+        console.log('开始运行，给启动器发送讯息启动')
+        this.status = statusMap.start
 
-      this.run(msg)
+        this.run(msg)
+      }
+      if (!this.description || !this.keywordList.length) {
+        this.$confirm('缺少描述或者关键词为空，则脚本运行时将对未填写的内容不做修改，如果点击确定，则开始运行，是否要继续?', '提示', {
+          confirmButtonText: '继续',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          startInit()
+        }).catch(() => {
+          return this.$message({
+            type: 'info',
+            message: '已取消运行'
+          })
+        })
+      } else {
+        startInit()
+      }
     },
     pause () {
       console.log('暂停')
@@ -187,10 +217,11 @@ export default {
         console.log('当前状态------' + this.status)
         // 如果正在执行，就继续
         if (this.status === statusMap.start) {
-          const timer = setTimeout(() => {
-            this.run(msg)
-            clearTimeout(timer)
-          }, 1000)
+          this.run(msg)
+          // const timer = setTimeout(() => {
+          //   this.run(msg)
+          //   clearTimeout(timer)
+          // }, 1000)
         } else if (this.status === statusMap.pause) {
           // 如果已经取消，就保存当前位置
           this.message = msg
