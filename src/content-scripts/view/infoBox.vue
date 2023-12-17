@@ -83,7 +83,7 @@ export default {
     },
     // 保存表单并保存
     async startFilling () {
-      await this.delay(1000, 1200)
+      await this.delay(1100, 1200)
       const evt = new InputEvent('input', {
         inputType: 'insertText',
         data: '',
@@ -123,7 +123,7 @@ export default {
         console.log('全部完成，结束运行')
         this.$message({
           type: 'success',
-          message: '任务已全部完成，自动化脚本毕竟没脑子，请注意好好检查一下噢'
+          message: '任务已全部完成，请注意好好检查一下噢'
         })
         this.status = statusMap.stop
         return
