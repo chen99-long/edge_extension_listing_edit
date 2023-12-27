@@ -2,7 +2,7 @@
   <div v-show="show" id="infoBox">
     <div class="box">
       <div class="title">描述：</div>
-      <el-input v-model="description" placeholder="输入描述"></el-input>
+      <el-input type="textarea" v-model="description" placeholder="输入描述"></el-input>
     </div>
     <div class="box">
       <div class="title">关键词：</div>
@@ -42,6 +42,7 @@
  </div>
   <div @click="pause" v-if="status === statusMap.start" class="startBtn">停止</div>
   <div @click="start(message)" class="startBtn" v-else>启动</div>
+  <el-button @click="run(message)" v-if="status === statusMap.start">卡了点这里</el-button>
 </template>
 
 <script>
@@ -215,6 +216,8 @@ export default {
           this.show = !this.show
         }
         console.log('当前状态------' + this.status)
+        this.message = msg
+        console.log('当前操作------' + this.msg)
         // 如果正在执行，就继续
         if (this.status === statusMap.start) {
           this.run(msg)
@@ -224,7 +227,6 @@ export default {
           // }, 1000)
         } else if (this.status === statusMap.pause) {
           // 如果已经取消，就保存当前位置
-          this.message = msg
           console.log('save pause status' + this.message)
         } else if (this.status === statusMap.stop) {
           // TODO 语义不明确，close命令收到代表首页列表加载完成
